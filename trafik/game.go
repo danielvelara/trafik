@@ -9,27 +9,27 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-/* Orientacion OSEN
-0 - Oeste
-1 - Sur
-2 - Este
-3 - Norte
+/* Orientation
+0 - WEST
+1 - SOUTH
+2 - EAST
+3 - NORTH
 */
 
 type Game struct {
-	semaphores []*Semaphore
-	carQueues  [][]*Car
-	hud        *Hud
-	active     bool
-	numCars    int
-	carChan    chan int
-	dTime      int
-	bg         ebiten.Image
-	semactual  int
+	semaphores       []*Semaphore
+	carQueues        [][]*Car
+	hud              *Hud
+	isActive         bool
+	numCars          int
+	carChan          chan int
+	dTime            int
+	bg               ebiten.Image
+	currentSemaphore int
 }
 
 func NewGame(ncars int) Game {
-	game := Game{active: true, numCars: ncars, dTime: 0, semactual: 0}
+	game := Game{isActive: true, numCars: ncars, dTime: 0, currentSemaphore: 0}
 	img, _, _ := ebitenutil.NewImageFromFile("assets/bg.png", ebiten.FilterDefault)
 
 	var wg sync.WaitGroup
@@ -59,16 +59,16 @@ func (g *Game) handleLights() {
 	for true {
 		time.Sleep(10 * time.Second)
 
-		g.semaphores[g.semactual].toggleLight()
-		g.semactual = (g.semactual + 1) % 4
+		g.semaphores[g.currentSemaphore].toggleLight()
+		g.currentSemaphore = (g.currentSemaphore + 1) % 4
 		time.Sleep(1250 * time.Millisecond)
-		g.semaphores[g.semactual].toggleLight()
+		g.semaphores[g.currentSemaphore].toggleLight()
 
 	}
 }
 
 func (g *Game) Update() error {
-	if g.active {
+	if g.isActive {
 		g.dTime = (g.dTime + 1) % 20
 		for i := 0; i < 4; i++ {
 			if err := g.semaphores[i].Update(g.dTime, 2); err != nil {

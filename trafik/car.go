@@ -1,6 +1,7 @@
 package trafik
 
 import (
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -59,23 +60,23 @@ func CarInit(g *Game, speed float64, dir int, destination int, s *Semaphore, i i
 	case 0: // West -> East
 		img, _, _ := ebitenutil.NewImageFromFile("assets/carWE.png", ebiten.FilterDefault)
 		car.img = *img
-		car.xPos = -240 // giro 250
+		car.xPos = -240
 		car.yPos = 480
 	case 1: // South -> North
 		img, _, _ := ebitenutil.NewImageFromFile("assets/carSN.png", ebiten.FilterDefault)
 		car.img = *img
 		car.xPos = 480
-		car.yPos = 1110 // giro 250
+		car.yPos = 1110
 	case 2: // East -> West
 		img, _, _ := ebitenutil.NewImageFromFile("assets/carEW.png", ebiten.FilterDefault)
 		car.img = *img
-		car.xPos = 1110 // giro 325
+		car.xPos = 1110
 		car.yPos = 400
 	case 3: // North -> South
 		img, _, _ := ebitenutil.NewImageFromFile("assets/carNS.png", ebiten.FilterDefault)
 		car.img = *img
 		car.xPos = 400
-		car.yPos = -230 // giro 325
+		car.yPos = -230
 	}
 	go car.checkSemaphore()
 	go car.matchSpeed()
@@ -106,23 +107,21 @@ func (c *Car) Update(dTime int) error {
 		// If car has crossed semaphore
 		if (c.distance >= 530 && c.distance < 1050) && !c.pass {
 			c.pass = true
-			c.dequeueW()
+			c.dequeueAtStart()
 		} else if c.distance >= 1180 { // Car is done traveling
 			c.dequeue() // Delete Items
 		}
 
-		/*
-			if está en rango de vuelta && destino es hacia donde se da la vuelta
-		*/
-		if (c.distance >= 650 && c.distance <= 690) && c.turn == 1 { // vuelta derecha
+		// If car is about to turn around
+		if (c.distance >= 650 && c.distance <= 690) && c.turn == 1 { // Turn right
 			c.direction = (c.destination + 2) % 4
-			// fmt.Println(c.distance)
+			fmt.Println(c.distance)
 			imgdir := []string{"assets/carWE.png", "assets/carSN.png", "assets/carEW.png", "assets/carNS.png"}
 			img, _, _ := ebitenutil.NewImageFromFile(imgdir[c.direction], ebiten.FilterDefault)
 			c.img = *img
-		} else if (c.distance >= 700 && c.distance <= 750) && c.turn == 3 { // vuelta izquierda
+		} else if (c.distance >= 700 && c.distance <= 750) && c.turn == 3 { // Turn left
 			c.direction = (c.destination + 2) % 4
-			// fmt.Println(c.distance)
+			fmt.Println(c.distance)
 			imgdir := []string{"assets/carWE.png", "assets/carSN.png", "assets/carEW.png", "assets/carNS.png"}
 			img, _, _ := ebitenutil.NewImageFromFile(imgdir[c.direction], ebiten.FilterDefault)
 			c.img = *img
@@ -161,21 +160,21 @@ func (c *Car) matchSpeed() {
 	for true {
 		time.Sleep(time.Millisecond * 10)
 		i := int(c.exitQueuePos())
-		if i > 0 { // si hay algun auto
-			if c.pass { // pasando el semaforo revisa la velocida dde otros
-				cr := c.game.carQueues[c.destination][i-1] // guarda referencia al carro frente a el
+		if i > 0 { // If there's a car left
+			if c.pass { // Check for other's speed
+				cr := c.game.carQueues[c.destination][i-1] // Save neighboor's speed
 				if (c.distance - cr.distance) <= 250 {
-					if c.speed > cr.speed { // iguala su velocidad
-						c.speed = cr.speed // si es mayor
+					if c.speed > cr.speed { // Match speed
+						c.speed = cr.speed
 					}
 				}
-			} else { // si no ha pasado se fija de la lista de espera
+			} else { // Else, check for queue
 				i := int(c.queuePos())
 				if i > 0 {
-					cr := c.semaphore.carsAtLight[i-1] // guarda referencia al carro frente a el
+					cr := c.semaphore.carsAtLight[i-1] // Save neighboor's speed
 					if (c.distance - cr.distance) <= 250 {
-						if c.speed > cr.speed { // iguala su velocidad
-							c.speed = cr.speed // si es mayor
+						if c.speed > cr.speed { // Lower speed
+							c.speed = cr.speed
 						}
 					}
 				}
@@ -203,9 +202,7 @@ func (c *Car) exitQueuePos() int {
 }
 func (c *Car) atPos() bool {
 	pos := float64(c.queuePos())
-	// comparar distancia recorrida, contra distancia de semaforo segun pos
-	// Ej. Posición 2 tiene que estar a = distancia de semaforo - distancia de un carro * pos
-	//waitPos := c.dis < (290 - 90*pos)
+	// Compare which positino to stop at semaphore (semaphore - carlength*pos)
 	dist := (500 - 90*pos)
 	if c.distance < dist {
 		return false
@@ -228,14 +225,14 @@ func (c *Car) carStart() {
 	c.run = true
 }
 
-func (c *Car) dequeueW() {
+func (c *Car) dequeueAtStart() {
 	time.Sleep(50 * time.Millisecond)
 
 	if len(c.semaphore.carsAtLight) > 0 {
 
 		c.queue()
 		i := c.queuePos()
-		// elimina el primer elemento
+		// Pop first car
 		c.semaphore.carsAtLight = append(c.semaphore.carsAtLight[:i], c.semaphore.carsAtLight[i+1:]...)
 	}
 }
@@ -249,16 +246,15 @@ func (c *Car) queue() {
 func (c *Car) dequeue() {
 	if len(c.game.carQueues[c.destination]) > 0 {
 		i := c.queuePos()
-		if i > 0 { // remote ith element
+		if i > 0 { // remote arbitrary car
 			c.game.carQueues[c.destination] = append(c.game.carQueues[c.destination][:i], c.game.carQueues[c.destination][i+1:]...)
 			c.semaphore.cars = append(c.semaphore.cars[i:], c.semaphore.cars[i+1:]...)
-		} else { // remove first element
+		} else { // remove first car
 			c.game.carQueues[c.destination] = c.game.carQueues[c.destination][1:]
 			c.semaphore.cars = c.semaphore.cars[1:]
 
 		}
 		c.game.hud.q[c.destination]--
 		c.game.hud.currentCars--
-
 	}
 }

@@ -40,7 +40,7 @@ func CreateHud(game *Game) *Hud {
 	}
 	const dpi = 72
 	mplusNormalFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
-		Size:    24,
+		Size:    32,
 		DPI:     dpi,
 		Hinting: font.HintingFull,
 	})
@@ -57,14 +57,8 @@ func CreateHud(game *Game) *Hud {
 }
 
 func (h *Hud) Draw(screen *ebiten.Image) error {
-	text.Draw(screen, "Total cars: "+strconv.Itoa(h.totalCars), mplusNormalFont, 20, 30, color.Black)
-	text.Draw(screen, "Current cars: "+strconv.Itoa(h.currentCars), mplusNormalFont, 20, 60, color.Black)
-	text.Draw(screen, "Active semaphore: "+strconv.Itoa(h.game.semactual), mplusBigFont, 20, 100, color.Black)
-
-	text.Draw(screen, "Queue Oeste: "+strconv.Itoa(h.q[0]), mplusNormalFont, 20, 150, color.Black)
-	text.Draw(screen, "Queue Sur: "+strconv.Itoa(h.q[1]), mplusNormalFont, 20, 180, color.Black)
-	text.Draw(screen, "Queue Este: "+strconv.Itoa(h.q[2]), mplusNormalFont, 20, 210, color.Black)
-	text.Draw(screen, "Queue Norte : "+strconv.Itoa(h.q[3]), mplusNormalFont, 20, 240, color.Black)
+	text.Draw(screen, "Total cars: "+strconv.Itoa(h.totalCars), mplusNormalFont, 20, 60, color.Black)
+	text.Draw(screen, "Current cars: "+strconv.Itoa(h.currentCars), mplusNormalFont, 20, 110, color.Black)
 
 	return nil
 }
