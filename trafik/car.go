@@ -11,22 +11,22 @@ import (
 )
 
 type Car struct {
-	game        *Game
-	direction   int
-	destination int
-	turn        int
-	speed       float64
-	distance    float64
-	xPos        float64
-	yPos        float64
-	run         bool
-	turned      bool
-	light       bool
-	pass        bool
-	img         ebiten.Image
-	semaphore   *Semaphore
-	orientation []string
-	vuelta      []string
+	game               *Game
+	direction          int
+	destination        int
+	turn               int
+	speed              float64
+	distance           float64
+	xPos               float64
+	yPos               float64
+	run                bool
+	turned             bool
+	light              bool
+	pass               bool
+	img                ebiten.Image
+	semaphore          *Semaphore
+	orientation        []string
+	currentOrientation []string
 }
 
 var wg sync.WaitGroup
@@ -52,7 +52,7 @@ func CarInit(g *Game, speed float64, dir int, destination int, s *Semaphore, i i
 	}
 
 	car.orientation = []string{"West", "South", "East", "North"}
-	car.vuelta = []string{"", "Derecha", "Frente", "Izquierda"}
+	car.currentOrientation = []string{"", "Right", "Front", "Left"}
 	car.destination = ((car.semaphore.position) + car.turn) % 4
 	car.light = car.semaphore.state
 
