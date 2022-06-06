@@ -7,6 +7,8 @@
 
 ![Ebiten Architecture](https://camo.githubusercontent.com/674c4bb22fc289ea4584cb355090516c915ad544ade00c1bf86414e655b49147/68747470733a2f2f65626974656e2e6f72672f696d616765732f6f76657276696577322e312e706e67)
 
+![Trafik Architecture](https://i.ibb.co/hy0dBnS/arch.png)
+
 ## Resources
 
 [Ebiten Examples](https://ebiten.org/examples/flappy.html)

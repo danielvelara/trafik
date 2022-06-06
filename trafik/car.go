@@ -54,7 +54,7 @@ func CarInit(g *Game, speed float64, dir int, destination int, s *Semaphore, i i
 	car.orientation = []string{"West", "South", "East", "North"}
 	car.currentOrientation = []string{"", "Right", "Front", "Left"}
 	car.destination = ((car.semaphore.position) + car.turn) % 4
-	car.light = car.semaphore.state
+	car.light = car.semaphore.isGreen
 
 	switch dir := car.direction; dir { // Load Image
 	case 0: // West -> East
@@ -87,7 +87,7 @@ func CarInit(g *Game, speed float64, dir int, destination int, s *Semaphore, i i
 func (c *Car) checkSemaphore() {
 	for true {
 		time.Sleep(time.Duration(50) * time.Millisecond)
-		c.light = c.semaphore.state
+		c.light = c.semaphore.isGreen
 		if !c.light {
 			if !c.run {
 				c.carStart()

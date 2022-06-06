@@ -21,7 +21,7 @@ type Semaphore struct {
 	dTime         int
 	x             int
 	carChan       chan int
-	state         bool //true - verde - false rojo
+	isGreen       bool
 	img           ebiten.Image
 	remainingCars int
 }
@@ -32,7 +32,7 @@ func SemInit(g *Game, pos int, wg *sync.WaitGroup) {
 		g:             g,
 		timerRed:      7,
 		timerGreen:    5,
-		state:         true,
+		isGreen:       true,
 		position:      pos,
 		x:             0,
 		remainingCars: g.numCars,
@@ -87,7 +87,7 @@ func (s *Semaphore) buildCar() {
 }
 
 func (s *Semaphore) toggleLight() {
-	s.state = !s.state
+	s.isGreen = !s.isGreen
 }
 
 func (s *Semaphore) Update(dTime int, t time.Duration) error {
@@ -96,7 +96,7 @@ func (s *Semaphore) Update(dTime int, t time.Duration) error {
 
 	s.dTime = (s.dTime + 1) % 20
 	//fmt.Println(s.state)
-	if s.state == true {
+	if s.isGreen == true {
 		img, _, _ := ebitenutil.NewImageFromFile("assets/semrojo.png", ebiten.FilterDefault)
 		s.img = *img
 	} else {
